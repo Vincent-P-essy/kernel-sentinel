@@ -26,7 +26,12 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install --yes clang llvm
       - run: go mod tidy && git diff --exit-code -- go.mod go.sum
       - run: go generate ./internal/probe
-      - run: git diff --exit-code -- internal/probe
+      - name: Verify generated bindings and same-toolchain object reproducibility
+        run: |
+          git diff --exit-code -- internal/probe/*.go
+          sha256sum internal/probe/*.o > /tmp/bpf-objects.sha256
+          go generate ./internal/probe
+          sha256sum --check /tmp/bpf-objects.sha256
       - run: test -z "$(gofmt -l .)"
       - run: go vet ./...
       - run: go test -race -coverprofile=coverage.out ./...
