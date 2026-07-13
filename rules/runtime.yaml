@@ -1,0 +1,233 @@
+rules:
+  - id: KS-EXEC-TEMP-001
+    title: Execution from a temporary directory
+    description: A process executed an image from a commonly writable temporary directory.
+    severity: high
+    score: 78
+    mitre: [T1059]
+    tags: [execution, filesystem]
+    match:
+      all:
+        - {field: kind, op: eq, value: process.exec}
+        - {field: process.executable, op: regex, value: '^/(tmp|var/tmp|dev/shm)/'}
+
+  - id: KS-SHADOW-READ-001
+    title: Successful access to the shadow password file
+    description: A process successfully opened the local password hash database.
+    severity: critical
+    score: 95
+    mitre: [T1003.008]
+    tags: [credential-access, sensitive-file]
+    match:
+      all:
+        - {field: kind, op: eq, value: file.open}
+        - {field: file.path, op: eq, value: /etc/shadow}
+        - {field: outcome.success, op: eq, value: true}
+
+  - id: KS-AUTHORIZED-KEYS-001
+    title: SSH authorized keys modification
+    description: A process opened an SSH authorized_keys file with write access.
+    severity: high
+    score: 88
+    mitre: [T1098.004]
+    tags: [persistence, ssh]
+    match:
+      all:
+        - {field: kind, op: eq, value: file.open}
+        - {field: file.path, op: regex, value: '/\.ssh/authorized_keys$'}
+        - {field: file.write, op: eq, value: true}
+
+  - id: KS-WEB-SHELL-001
+    title: Shell spawned by a web server
+    description: A web-facing worker process launched a command interpreter.
+    severity: critical
+    score: 96
+    mitre: [T1505.003, T1059.004]
+    tags: [web-shell, execution]
+    match:
+      all:
+        - {field: kind, op: eq, value: process.exec}
+        - {field: process.parent.name, op: in, value: [nginx, apache2, httpd, php-fpm]}
+        - {field: process.name, op: in, value: [sh, bash, dash, zsh]}
+
+  - id: KS-CONTAINER-MINER-001
+    title: Crypto-miner process in a container
+    description: A container launched a process or command line associated with mining software.
+    severity: critical
+    score: 94
+    mitre: [T1496]
+    tags: [impact, container]
+    match:
+      all:
+        - {field: kind, op: eq, value: process.exec}
+        - {field: container.id, op: exists, value: true}
+      any:
+        - {field: process.command_line, op: regex, value: '(?i)(xmrig|minerd|stratum\+tcp)'}
+        - {field: process.name, op: in, value: [xmrig, minerd]}
+
+  - id: KS-ESCAPE-PROBE-001
+    title: Container escape primitive simulation
+    description: The controlled escape-probe marker executed inside a container.
+    severity: high
+    score: 86
+    mitre: [T1611]
+    tags: [container, lab-simulation]
+    match:
+      all:
+        - {field: kind, op: eq, value: process.exec}
+        - {field: container.id, op: exists, value: true}
+        - {field: process.command_line, op: contains, value: sentinel-escape-probe}
+
+  - id: KS-LOG-DELETION-001
+    title: Security log deletion command
+    description: A process attempted to remove or truncate Linux log files.
+    severity: high
+    score: 87
+    mitre: [T1070.002]
+    tags: [defense-evasion, logs]
+    match:
+      all:
+        - {field: kind, op: eq, value: process.exec}
+        - {field: process.command_line, op: regex, value: '(?i)(rm\s+.*(/var/log|audit\.log)|truncate\s+.*(/var/log|audit\.log))'}
+
+  - id: KS-CRON-PERSISTENCE-001
+    title: Cron persistence file modification
+    description: A process opened a system cron location with write access.
+    severity: high
+    score: 85
+    mitre: [T1053.003]
+    tags: [persistence, cron]
+    match:
+      all:
+        - {field: kind, op: eq, value: file.open}
+        - {field: file.write, op: eq, value: true}
+        - {field: file.path, op: regex, value: '^/(etc/cron\.(d|daily|hourly|weekly|monthly)/|var/spool/cron/)'}
+
+  - id: KS-SYSTEMD-PERSISTENCE-001
+    title: Systemd unit modification
+    description: A process opened a system service unit location with write access.
+    severity: high
+    score: 84
+    mitre: [T1543.002]
+    tags: [persistence, systemd]
+    match:
+      all:
+        - {field: kind, op: eq, value: file.open}
+        - {field: file.write, op: eq, value: true}
+        - {field: file.path, op: regex, value: '^/(etc/systemd/system|usr/lib/systemd/system)/.*\.service$'}
+
+  - id: KS-SSH-PRIVATE-KEY-001
+    title: SSH private key access
+    description: A process accessed a likely SSH private key in a user profile.
+    severity: high
+    score: 82
+    mitre: [T1552.004]
+    tags: [credential-access, ssh]
+    match:
+      all:
+        - {field: kind, op: eq, value: file.open}
+        - {field: file.path, op: regex, value: '/\.ssh/(id_rsa|id_ed25519|id_ecdsa)$'}
+        - {field: outcome.success, op: eq, value: true}
+
+  - id: KS-DOCKER-SOCKET-001
+    title: Docker control socket access
+    description: A process accessed the Docker daemon socket, which can provide host-level control.
+    severity: critical
+    score: 93
+    mitre: [T1611]
+    tags: [container, privilege-escalation]
+    match:
+      all:
+        - {field: kind, op: eq, value: file.open}
+        - {field: file.path, op: eq, value: /var/run/docker.sock}
+
+  - id: KS-K8S-TOKEN-001
+    title: Kubernetes service-account token access
+    description: A process accessed a mounted Kubernetes service-account token.
+    severity: high
+    score: 89
+    mitre: [T1528]
+    tags: [credential-access, kubernetes]
+    match:
+      all:
+        - {field: kind, op: eq, value: file.open}
+        - {field: file.path, op: contains, value: /var/run/secrets/kubernetes.io/serviceaccount/token}
+        - {field: outcome.success, op: eq, value: true}
+
+  - id: KS-NAMESPACE-TOOL-001
+    title: Linux namespace manipulation tool
+    description: A container launched nsenter or unshare, common primitives in escape paths.
+    severity: high
+    score: 84
+    mitre: [T1611]
+    tags: [container, namespace]
+    match:
+      all:
+        - {field: kind, op: eq, value: process.exec}
+        - {field: container.id, op: exists, value: true}
+        - {field: process.name, op: in, value: [nsenter, unshare]}
+
+  - id: KS-SETUID-ROOT-001
+    title: Process changed effective identity to root
+    description: A successful setuid syscall targeted UID zero from a non-root process context.
+    severity: critical
+    score: 96
+    mitre: [T1548.001]
+    tags: [privilege-escalation]
+    match:
+      all:
+        - {field: kind, op: eq, value: privilege.setuid}
+        - {field: privilege.target_uid, op: eq, value: 0}
+        - {field: process.uid, op: neq, value: 0}
+        - {field: outcome.success, op: eq, value: true}
+
+  - id: KS-SETUID-BINARY-001
+    title: Setuid permission creation command
+    description: A command attempted to add a setuid permission bit to a file.
+    severity: high
+    score: 86
+    mitre: [T1548.001]
+    tags: [privilege-escalation, filesystem]
+    match:
+      all:
+        - {field: kind, op: eq, value: process.exec}
+        - {field: process.command_line, op: regex, value: '(?i)chmod\s+.*(u\+s|4[0-7]{3})'}
+
+  - id: KS-KUBECTL-SECRETS-001
+    title: Kubernetes secrets enumeration
+    description: Kubectl was used to request secret resources.
+    severity: high
+    score: 82
+    mitre: [T1613]
+    tags: [discovery, kubernetes]
+    match:
+      all:
+        - {field: kind, op: eq, value: process.exec}
+        - {field: process.name, op: eq, value: kubectl}
+        - {field: process.command_line, op: regex, value: '(?i)\b(get|list|describe)\s+secrets?\b'}
+
+  - id: KS-DNS-EXFIL-001
+    title: DNS utility contacted an external resolver
+    description: A DNS command-line utility connected to an external resolver, consistent with the lab exfiltration pattern.
+    severity: medium
+    score: 68
+    mitre: [T1048.003]
+    tags: [exfiltration, dns]
+    match:
+      all:
+        - {field: kind, op: eq, value: network.connect}
+        - {field: network.port, op: eq, value: 53}
+        - {field: network.external, op: eq, value: true}
+        - {field: process.name, op: in, value: [dig, nslookup]}
+
+  - id: KS-CURL-PIPE-SHELL-001
+    title: Download piped directly to a shell
+    description: A shell command combined a downloader with a command interpreter through a pipe.
+    severity: critical
+    score: 92
+    mitre: [T1105, T1059.004]
+    tags: [ingress-transfer, execution]
+    match:
+      all:
+        - {field: kind, op: eq, value: process.exec}
+        - {field: process.command_line, op: regex, value: '(?i)(curl|wget).*(\||%7c)\s*(sh|bash)'}

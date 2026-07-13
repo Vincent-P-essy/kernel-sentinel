@@ -1,0 +1,60 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kernel-sentinel-attack-lab
+  labels:
+    app.kubernetes.io/part-of: kernel-sentinel
+spec:
+  podSelector:
+    matchLabels:
+      kernel-sentinel.io/lab-role: attack
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress: []
+  egress:
+    # The suite can only fetch the fixed payload from its namespace-local sink.
+    - to:
+        - podSelector:
+            matchLabels:
+              kernel-sentinel.io/lab-role: sink
+      ports:
+        - protocol: TCP
+          port: 8080
+    # DNS is needed solely to resolve the sink Service. The TEST-NET exfiltration
+    # marker in the suite remains blocked by the preceding destination allowlist.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kernel-sentinel-lab-sink
+  labels:
+    app.kubernetes.io/part-of: kernel-sentinel
+spec:
+  podSelector:
+    matchLabels:
+      kernel-sentinel.io/lab-role: sink
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              kernel-sentinel.io/lab-role: attack
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress: []

@@ -1,0 +1,47 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kernel-sentinel-attack-lab
+  labels:
+    app.kubernetes.io/name: kernel-sentinel-attack-lab
+    app.kubernetes.io/part-of: kernel-sentinel
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 180
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kernel-sentinel-attack-lab
+        app.kubernetes.io/part-of: kernel-sentinel
+        kernel-sentinel.io/lab-role: attack
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      nodeSelector:
+        kubernetes.io/os: linux
+        # Opt in only a disposable lab node:
+        # kubectl label node <node-name> kernel-sentinel.io/lab=true
+        kernel-sentinel.io/lab: "true"
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: attack-lab
+          image: kernel-sentinel-lab
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+              # Required only by the controlled setuid transition in the lab suite.
+              add: [SETUID]
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi

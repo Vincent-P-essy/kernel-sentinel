@@ -1,0 +1,42 @@
+rules:
+  - id: KS-REVERSE-SHELL-001
+    title: Shell process opened a network connection
+    description: A newly executed command shell connected to a remote endpoint from the same process.
+    severity: critical
+    score: 97
+    mitre: [T1059.004, T1571]
+    tags: [command-and-control, sequence]
+    within: 10s
+    group_by: process.pid
+    sequence:
+      - name: shell-start
+        match:
+          all:
+            - {field: kind, op: eq, value: process.exec}
+            - {field: process.name, op: in, value: [sh, bash, dash, zsh]}
+      - name: outbound-connect
+        match:
+          all:
+            - {field: kind, op: eq, value: network.connect}
+            - {field: outcome.success, op: eq, value: true}
+
+  - id: KS-DOWNLOAD-EXEC-001
+    title: Network transfer followed by temporary execution
+    description: A container made an outbound connection and soon executed a file from a writable temporary directory.
+    severity: critical
+    score: 93
+    mitre: [T1105, T1204.002]
+    tags: [ingress-transfer, sequence, container]
+    within: 2m
+    group_by: container.id
+    sequence:
+      - name: network-transfer
+        match:
+          all:
+            - {field: kind, op: eq, value: network.connect}
+            - {field: outcome.success, op: eq, value: true}
+      - name: execute-payload
+        match:
+          all:
+            - {field: kind, op: eq, value: process.exec}
+            - {field: process.executable, op: regex, value: '^/(tmp|var/tmp|dev/shm)/'}

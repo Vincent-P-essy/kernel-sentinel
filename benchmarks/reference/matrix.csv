@@ -1,0 +1,21 @@
+scenario_id,technique,title,detected,rule_id,latency_ns,events_used
+reverse-shell,T1059.004,Unix shell reverse channel,true,KS-REVERSE-SHELL-001,71,network.connect + process.exec
+shadow-read,T1003.008,Linux credential file access,true,KS-SHADOW-READ-001,46,file.open
+download-execute,T1105,Transfer followed by execution,true,KS-DOWNLOAD-EXEC-001,47,network.connect + process.exec
+authorized-keys,T1098.004,SSH authorized key persistence,true,KS-AUTHORIZED-KEYS-001,57,file.open
+web-shell,T1505.003,Web server spawned shell,true,KS-WEB-SHELL-001,61,process.exec
+container-miner,T1496,Container resource hijacking,true,KS-CONTAINER-MINER-001,57,process.exec
+escape-simulation,T1611,Container escape simulation marker,true,KS-ESCAPE-PROBE-001,50,process.exec
+log-deletion,T1070.002,Linux log deletion,true,KS-LOG-DELETION-001,62,process.exec
+cron-persistence,T1053.003,Cron persistence,true,KS-CRON-PERSISTENCE-001,53,file.open
+systemd-persistence,T1543.002,Systemd service persistence,true,KS-SYSTEMD-PERSISTENCE-001,53,file.open
+ssh-key-read,T1552.004,Private key collection,true,KS-SSH-PRIVATE-KEY-001,57,file.open
+docker-socket,T1611,Container control socket access,true,KS-DOCKER-SOCKET-001,46,file.open
+k8s-token,T1528,Kubernetes token theft,true,KS-K8S-TOKEN-001,47,file.open
+namespace-entry,T1611,Namespace entry primitive,true,KS-NAMESPACE-TOOL-001,48,process.exec
+setuid-root,T1548.001,Setuid privilege transition,true,KS-SETUID-ROOT-001,51,privilege.setuid
+setuid-bit,T1548.001,Setuid permission creation,true,KS-SETUID-BINARY-001,52,process.exec
+k8s-secrets,T1613,Kubernetes secrets discovery,true,KS-KUBECTL-SECRETS-001,53,process.exec
+dns-exfil,T1048.003,DNS exfiltration channel,true,KS-DNS-EXFIL-001,52,network.connect
+curl-pipe-shell,T1204.002,Download piped to shell,true,KS-CURL-PIPE-SHELL-001,47,process.exec
+temp-execution,T1059,Execution from shared memory,true,KS-EXEC-TEMP-001,52,process.exec

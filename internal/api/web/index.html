@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Kernel Sentinel</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">K</span>
+        <div>
+          <h1>Kernel Sentinel</h1>
+          <p>Runtime detection engine</p>
+        </div>
+      </div>
+      <div class="source-state" id="source-state"><i></i><span>Connecting</span></div>
+    </header>
+
+    <main>
+      <section class="toolbar" aria-label="Runtime filters">
+        <div class="filter-group">
+          <span>Event source</span>
+          <div class="segments" id="kind-filter">
+            <button type="button" class="active" data-kind="all">All</button>
+            <button type="button" data-kind="process.exec">Exec</button>
+            <button type="button" data-kind="process.fork">Fork</button>
+            <button type="button" data-kind="file.open">Files</button>
+            <button type="button" data-kind="network.connect">Network</button>
+            <button type="button" data-kind="privilege.setuid">Privilege</button>
+          </div>
+        </div>
+        <button type="button" class="icon-button" id="refresh" title="Refresh telemetry" aria-label="Refresh telemetry">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5"></path>
+            <path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5"></path>
+          </svg>
+        </button>
+      </section>
+
+      <section class="metric-grid" aria-label="Runtime statistics">
+        <article class="metric"><span>Events observed</span><strong id="events-total">0</strong><small id="event-rate">normalized syscalls</small></article>
+        <article class="metric"><span>Alerts</span><strong id="alerts-total">0</strong><small id="critical-total">0 critical</small></article>
+        <article class="metric"><span>p95 detection</span><strong id="latency">0 ms</strong><small>ingest to decision</small></article>
+        <article class="metric"><span>Rules loaded</span><strong id="rules-total">0</strong><small id="techniques-total">0 MITRE techniques</small></article>
+        <article class="metric"><span>Ring output failures</span><strong id="ring-failures">n/a</strong><small id="probe-detail">replay source</small></article>
+      </section>
+
+      <section class="overview-grid">
+        <div class="panel chart-panel">
+          <div class="panel-heading">
+            <div><h2>Kernel event distribution</h2><p>Normalized event volume by source</p></div>
+            <span class="window-label">retained window</span>
+          </div>
+          <div class="canvas-wrap"><canvas id="event-chart" role="img" aria-label="Kernel event distribution chart"></canvas></div>
+        </div>
+        <aside class="panel coverage-panel">
+          <div class="panel-heading"><div><h2>Detection coverage</h2><p>Loaded rule inventory</p></div></div>
+          <div class="coverage-body">
+            <div class="coverage-ring" id="coverage-ring"><strong id="coverage-count">0</strong><span>techniques</span></div>
+            <div class="severity-list" id="severity-list"></div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="panel alert-panel">
+        <div class="panel-heading">
+          <div><h2>Detection queue</h2><p id="alert-caption">No alerts loaded</p></div>
+          <span class="live-label"><i></i> live</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Time</th><th>Severity</th><th>Detection</th><th>Entity</th><th>MITRE</th><th>Latency</th></tr></thead>
+            <tbody id="alert-body"><tr><td colspan="6" class="empty">No detections</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel event-panel">
+        <div class="panel-heading"><div><h2>Event stream</h2><p>Latest normalized kernel activity</p></div></div>
+        <div id="event-list" class="event-list"></div>
+      </section>
+    </main>
+  </body>
+</html>

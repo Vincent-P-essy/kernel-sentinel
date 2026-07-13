@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kernel-sentinel-lab-sink
+  labels:
+    app.kubernetes.io/name: kernel-sentinel-lab-sink
+    app.kubernetes.io/part-of: kernel-sentinel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kernel-sentinel-lab-sink
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kernel-sentinel-lab-sink
+        app.kubernetes.io/part-of: kernel-sentinel
+        kernel-sentinel.io/lab-role: sink
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/os: linux
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: sink
+          image: python:3.12-alpine
+          command: ["python", "-m", "http.server", "8080", "--directory", "/srv"]
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /payload
+              port: http
+            initialDelaySeconds: 1
+            periodSeconds: 2
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: payload
+              mountPath: /srv
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+      volumes:
+        - name: payload
+          configMap:
+            name: kernel-sentinel-lab-payload
+            defaultMode: 0555
+        - name: tmp
+          emptyDir:
+            sizeLimit: 8Mi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kernel-sentinel-lab-payload
+  labels:
+    app.kubernetes.io/name: kernel-sentinel-lab-sink
+    app.kubernetes.io/part-of: kernel-sentinel
+data:
+  payload: |-
+    #!/bin/sh
+    printf 'safe kubernetes lab payload\n'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  # lab/run.sh resolves this intentionally short, namespace-local name.
+  name: sink
+  labels:
+    app.kubernetes.io/name: kernel-sentinel-lab-sink
+    app.kubernetes.io/part-of: kernel-sentinel
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: kernel-sentinel-lab-sink
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      appProtocol: http

@@ -1,0 +1,22 @@
+schema_version: "1.0"
+techniques:
+  - {scenario_id: reverse-shell, technique: T1059.004, title: Unix shell reverse channel, expected_rules: [KS-REVERSE-SHELL-001]}
+  - {scenario_id: shadow-read, technique: T1003.008, title: Linux credential file access, expected_rules: [KS-SHADOW-READ-001]}
+  - {scenario_id: download-execute, technique: T1105, title: Transfer followed by execution, expected_rules: [KS-DOWNLOAD-EXEC-001]}
+  - {scenario_id: authorized-keys, technique: T1098.004, title: SSH authorized key persistence, expected_rules: [KS-AUTHORIZED-KEYS-001]}
+  - {scenario_id: web-shell, technique: T1505.003, title: Web server spawned shell, expected_rules: [KS-WEB-SHELL-001]}
+  - {scenario_id: container-miner, technique: T1496, title: Container resource hijacking, expected_rules: [KS-CONTAINER-MINER-001]}
+  - {scenario_id: escape-simulation, technique: T1611, title: Container escape simulation marker, expected_rules: [KS-ESCAPE-PROBE-001]}
+  - {scenario_id: log-deletion, technique: T1070.002, title: Linux log deletion, expected_rules: [KS-LOG-DELETION-001]}
+  - {scenario_id: cron-persistence, technique: T1053.003, title: Cron persistence, expected_rules: [KS-CRON-PERSISTENCE-001]}
+  - {scenario_id: systemd-persistence, technique: T1543.002, title: Systemd service persistence, expected_rules: [KS-SYSTEMD-PERSISTENCE-001]}
+  - {scenario_id: ssh-key-read, technique: T1552.004, title: Private key collection, expected_rules: [KS-SSH-PRIVATE-KEY-001]}
+  - {scenario_id: docker-socket, technique: T1611, title: Container control socket access, expected_rules: [KS-DOCKER-SOCKET-001]}
+  - {scenario_id: k8s-token, technique: T1528, title: Kubernetes token theft, expected_rules: [KS-K8S-TOKEN-001]}
+  - {scenario_id: namespace-entry, technique: T1611, title: Namespace entry primitive, expected_rules: [KS-NAMESPACE-TOOL-001]}
+  - {scenario_id: setuid-root, technique: T1548.001, title: Setuid privilege transition, expected_rules: [KS-SETUID-ROOT-001]}
+  - {scenario_id: setuid-bit, technique: T1548.001, title: Setuid permission creation, expected_rules: [KS-SETUID-BINARY-001]}
+  - {scenario_id: k8s-secrets, technique: T1613, title: Kubernetes secrets discovery, expected_rules: [KS-KUBECTL-SECRETS-001]}
+  - {scenario_id: dns-exfil, technique: T1048.003, title: DNS exfiltration channel, expected_rules: [KS-DNS-EXFIL-001]}
+  - {scenario_id: curl-pipe-shell, technique: T1204.002, title: Download piped to shell, expected_rules: [KS-CURL-PIPE-SHELL-001]}
+  - {scenario_id: temp-execution, technique: T1059, title: Execution from shared memory, expected_rules: [KS-EXEC-TEMP-001]}

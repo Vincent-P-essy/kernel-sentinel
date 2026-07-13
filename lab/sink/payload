@@ -1,0 +1,2 @@
+#!/bin/sh
+printf 'sentinel lab payload executed\n' >/tmp/sentinel-payload-result

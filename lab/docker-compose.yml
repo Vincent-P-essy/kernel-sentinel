@@ -1,0 +1,95 @@
+services:
+  sentinel-live:
+    build:
+      context: ..
+    user: "0:0"
+    command: ["-source", "live", "-rules", "/etc/kernel-sentinel/rules", "-listen", "0.0.0.0:8081", "-alerts", "/results/alerts.jsonl"]
+    pid: host
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,noexec,nosuid
+    cap_drop:
+      - ALL
+    cap_add:
+      - BPF
+      - PERFMON
+      - SYS_RESOURCE
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /sys/kernel/tracing:/sys/kernel/tracing:ro
+      - /proc:/host/proc:ro
+      - live-results:/results
+    environment:
+      SENTINEL_PROC_ROOT: /host/proc
+    networks: [labnet]
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/kernel-sentinel", "-healthcheck", "http://127.0.0.1:8081/healthz"]
+      interval: 2s
+      timeout: 1s
+      retries: 15
+
+  sink:
+    image: python:3.12-alpine
+    command: ["python", "-m", "http.server", "8080", "--directory", "/srv"]
+    user: "65534:65534"
+    read_only: true
+    tmpfs:
+      - /tmp:size=8m,noexec,nosuid
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ./sink:/srv:ro
+    networks: [labnet]
+
+  attack-lab:
+    build:
+      context: .
+    depends_on:
+      sentinel-live:
+        condition: service_healthy
+      sink:
+        condition: service_started
+    cap_drop: [ALL]
+    cap_add: [SETUID]
+    security_opt:
+      - no-new-privileges:true
+    networks: [labnet]
+
+  lab-report:
+    build:
+      context: ..
+    user: "0:0"
+    entrypoint: ["/usr/local/bin/sentinel-benchmark"]
+    command:
+      - -rules
+      - /etc/kernel-sentinel/rules
+      - -truth
+      - /opt/kernel-sentinel/ground-truth.yaml
+      - -live-alerts
+      - /results/alerts.jsonl
+      - -settle
+      - ${LIVE_LAB_SETTLE:-2s}
+      - -out
+      - /results/report
+      - -fail-under
+      - ${LIVE_LAB_MIN_COVERAGE:-1}
+      - -print-markdown
+    depends_on:
+      attack-lab:
+        condition: service_completed_successfully
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - live-results:/results
+    network_mode: none
+
+networks:
+  labnet:
+    internal: true
+
+volumes:
+  live-results:

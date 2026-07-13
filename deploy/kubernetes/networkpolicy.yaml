@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kernel-sentinel
+  labels:
+    app.kubernetes.io/name: kernel-sentinel
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: kernel-sentinel
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # API consumers must be in this namespace and explicitly opt in with this label.
+    - from:
+        - podSelector:
+            matchLabels:
+              kernel-sentinel.io/api-client: "true"
+      ports:
+        - protocol: TCP
+          port: 8081
+  # The collector does not require outbound network access.
+  egress: []

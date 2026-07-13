@@ -1,0 +1,21 @@
+services:
+  sentinel-live:
+    build: .
+    user: "0:0"
+    command: ["-source", "live", "-rules", "/etc/kernel-sentinel/rules", "-listen", "0.0.0.0:8081"]
+    pid: host
+    network_mode: host
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - BPF
+      - PERFMON
+      - SYS_RESOURCE
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /sys/kernel/tracing:/sys/kernel/tracing:ro
+      - /proc:/host/proc:ro
+    environment:
+      SENTINEL_PROC_ROOT: /host/proc
