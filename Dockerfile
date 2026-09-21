@@ -1,4 +1,4 @@
-FROM golang:1.25-bookworm@sha256:a9c020ee3d1508c7be5435c262434e3d3fc1d0e76a11afeb9ddae7d60bc86aa4 AS build
+FROM golang:1.25-bookworm@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437 AS build
 
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends clang llvm ca-certificates \
