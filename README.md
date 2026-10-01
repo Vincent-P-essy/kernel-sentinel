@@ -17,6 +17,12 @@ a named scenario, an expected rule, a MITRE ATT&CK mapping, and benign
 counterexamples. It is a research and portfolio system—not a production EDR,
 not an antivirus, and not a syscall enforcement mechanism.
 
+## Running example
+
+![kernel-sentinel running locally](docs/screenshots/application.png)
+
+Attack-suite JSONL events replayed through the rule engine and displayed in the running dashboard. This capture uses replay mode, not live eBPF probes. [Commands and test results](docs/verification.md).
+
 ## Evidence snapshot
 
 | Measurement | Reference result | Scope |
