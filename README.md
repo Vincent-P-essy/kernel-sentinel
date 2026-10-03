@@ -17,11 +17,11 @@ a named scenario, an expected rule, a MITRE ATT&CK mapping, and benign
 counterexamples. It is a research and portfolio system—not a production EDR,
 not an antivirus, and not a syscall enforcement mechanism.
 
-## Running example
+## Dashboard Preview
 
-![kernel-sentinel running locally](docs/screenshots/application.png)
+![Runtime detection dashboard replaying the bundled event suite](docs/screenshots/dashboard-overview.png)
 
-Attack-suite JSONL events replayed through the rule engine and displayed in the running dashboard. This capture uses replay mode, not live eBPF probes. [Commands and test results](docs/verification.md).
+Built Go application in replay mode with `lab/events/attack-suite.jsonl`. This preview shows replayed events; live eBPF collection requires a suitable Linux host and privileges.
 
 ## Evidence snapshot
 
